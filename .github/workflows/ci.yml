@@ -1,0 +1,66 @@
+name: Django CI - Self Hosted Runner
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+
+    name: Executar testes Django
+
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+      - django-ci
+
+    steps:
+
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Informações do servidor
+        run: |
+          echo "Usuário:"
+          whoami
+
+          echo "Servidor:"
+          hostname
+
+          echo "Sistema operacional:"
+          uname -a
+
+          echo "Diretório de execução:"
+          pwd
+
+      - name: Criar ambiente virtual
+        run: python -m venv .venv
+
+      - name: Instalar dependências
+        run: |
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r requirements.txt
+
+      - name: Verificar configuração Django
+        run: .venv/bin/python manage.py check
+
+      - name: Executar testes
+        run: .venv/bin/python manage.py test
+
+      - name: Remover ambiente virtual
+        if: always()
+        run: rm -rf .venv
